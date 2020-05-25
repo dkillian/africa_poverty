@@ -73,7 +73,6 @@ pop <- pop %>%
 
 
 # crosswalk country ids
-cross = read.csv("../data/crosswalks/crosswalk_countries.csv", stringsAsFactors = F)
 
 cross <- read_csv("data/crosswalks/crosswalk_countries.csv") %>%
     as.data.frame
@@ -160,6 +159,7 @@ full <- full %>%
 str(full)
 str(full2)
 describe(full$povcal)
+tail(full)
 
 
 #get year in better format
@@ -250,7 +250,7 @@ us2
 
 us == us2
 
-us$year = us$Group.1 %>% as.character() %>% substr(2, 6) %>% as.numeric() 
+#us$year = us$Group.1 %>% as.character() %>% substr(2, 6) %>% as.numeric() 
 
 us3 = merge(us2, us_pop, by.x="Group.1", by.y="year")
 us3
@@ -380,6 +380,9 @@ tail(year)
 
 frq(year$year)
 
+write_csv(year, "replication/tables/fig1b/year.csv")
+write_rds(year, "replication/tables/fig1b/year.rds")
+
 options(scipen=100)
 
 year
@@ -389,47 +392,6 @@ resolution
 overpass
 str(overpass)
 str(year)
-
-ggplot() + 
-    geom_line(data = overpass, aes(year, value, group=variable, color=as.factor(res)), size=.8) +
-    geom_line(data = year, aes(year, value, group=variable), size=.8, linetype="1232") +
-    
-    scale_y_continuous(trans=reverselog_trans(10), limits = c(4927500, 0.5),
-                       breaks = c(1, 7, 30, 365, 3650, 36500, 365000, 4927500), 
-                       labels = c("a day", "a week", "a month", "a year", "10 years", "100 years", "1,000 years", "13,500 years"),
-                       sec.axis=sec_axis(~., 
-                                         breaks=lab[,2],
-                                         labels=lab[,1])) + 
-    
-    scale_x_continuous(limits = c(2000, 2018), breaks=seq(2000, 2018, 2)) + 
-    
-    geom_hline(yintercept=1, size=0.7, alpha=0.5, color="grey", linetype="longdash") + 
-    geom_hline(yintercept=7,size=0.7, alpha=0.5, color="grey", linetype="longdash") + 
-    geom_hline(yintercept=30, size=0.7, alpha=0.5, color="grey", linetype="longdash") +
-    geom_hline(yintercept=365, size=0.7, alpha=0.5, color="grey", linetype="longdash") +
-    geom_hline(yintercept=3650, size=0.7, alpha=0.5, color="grey", linetype="longdash") +
-    geom_hline(yintercept=36500, size=0.7, alpha=0.5, color="grey", linetype="longdash") +
-    geom_hline(yintercept=365000, size=0.7, alpha=0.5, color="grey", linetype="longdash") +
-    geom_hline(yintercept=4927500, size=0.7, alpha=0.5, color="grey", linetype="longdash") + 
-    
-    labs(y="Avg. household revisit interval (days)",
-         x="",
-         title="Average household revisit rate (surveys)\nand average location revisit rate (satellites)") + 
-    theme_anne("sans", size=25) +
-    scale_colour_manual(values = colorRampPalette(c("#06276E", "#9BC7FF"), bias=2)(5)) + 
-    theme_minimal() + 
-    theme(legend.position = "none",
-          panel.border=element_blank(),
-          panel.grid.major=element_blank(),
-          panel.grid.minor=element_blank(),
-          plot.title=element_text(hjust=.5)) +
-    nobord 
-
-ggsave("viz/Figure 1b household or location revisit rates.png",
-       type="cairo",
-       device="png",
-       height=5, 
-       width=7)
 
 
 # labels on right
@@ -474,48 +436,50 @@ lab <- data.frame(label = c("U.S. surveys","Africa surveys","Sentinel 2","LandSa
 
 lab
 
-year <- year %>%
-    mutate(label = ifelse(year==max(year), as.character(variable), NA_character_),
-           country2 = fct_reorder(country, cases, max))
-
-frq(byDay$label)
-
-?rank
-rank(byDay$country)
-frq(byDay$country2)
-
-str(byDay)
-head(byDay)
-tail(byDay)
-
-?distinct
-lab <- byDay %>%
-    distinct(label) %>%
-    na.omit %>%
-    unlist
-
-lab
-
-case_ends <- byDay %>%
-    group_by(country) %>%
-    top_n(1,cases) %>%
-    pull(cases)
-
-case_ends
-
-scale_y_continuous(limits=c(0,225000),
-                   breaks=seq(0,225000,25000),
-                   labels=comma,
-                   sec.axis=sec_axis(~., 
-                                     breaks=case_ends,
-                                     labels=lab[1:6]))
+write_csv(lab, "replication/tables/fig1b/fig1b lab.csv")
 
 
 
+ggplot() + 
+    geom_line(data = overpass, aes(year, value, group=variable, color=as.factor(res)), size=.8) +
+    geom_line(data = year, aes(year, value, group=variable), size=.8, linetype="1232") +
+    
+    scale_y_continuous(trans=reverselog_trans(10), limits = c(4927500, 0.5),
+                       breaks = c(1, 7, 30, 365, 3650, 36500, 365000, 4927500), 
+                       labels = c("a day", "a week", "a month", "a year", "10 years", "100 years", "1,000 years", "13,500 years"),
+                       sec.axis=sec_axis(~., 
+                                         breaks=lab[,2],
+                                         labels=lab[,1])) + 
+    
+    scale_x_continuous(limits = c(2000, 2018), breaks=seq(2000, 2018, 2)) + 
+    
+    geom_hline(yintercept=1, size=0.7, alpha=0.5, color="grey", linetype="longdash") + 
+    geom_hline(yintercept=7,size=0.7, alpha=0.5, color="grey", linetype="longdash") + 
+    geom_hline(yintercept=30, size=0.7, alpha=0.5, color="grey", linetype="longdash") +
+    geom_hline(yintercept=365, size=0.7, alpha=0.5, color="grey", linetype="longdash") +
+    geom_hline(yintercept=3650, size=0.7, alpha=0.5, color="grey", linetype="longdash") +
+    geom_hline(yintercept=36500, size=0.7, alpha=0.5, color="grey", linetype="longdash") +
+    geom_hline(yintercept=365000, size=0.7, alpha=0.5, color="grey", linetype="longdash") +
+    geom_hline(yintercept=4927500, size=0.7, alpha=0.5, color="grey", linetype="longdash") + 
+    
+    labs(y="Avg. household revisit interval (days)",
+         x="",
+         title="Average household revisit rate (surveys)\nand average location revisit rate (satellites)") + 
+    theme_anne("sans", size=25) +
+    scale_colour_manual(values = colorRampPalette(c("#06276E", "#9BC7FF"), bias=2)(5)) + 
+    theme_minimal() + 
+    theme(legend.position = "none",
+          panel.border=element_blank(),
+          panel.grid.major=element_blank(),
+          panel.grid.minor=element_blank(),
+          plot.title=element_text(hjust=.5)) +
+    nobord 
 
-p
-
-ggsave("../raw_fig/Figure1b_revisitrate.pdf", plot=p,  width=11.5, height=7.4)
+ggsave("viz/Figure 1b household or location revisit rates.png",
+       type="cairo",
+       device="png",
+       height=5, 
+       width=7)
 
 
 ######################################################
